@@ -1,0 +1,15 @@
+{
+  "name": "node-chat-backend",
+  "version": "0.0.1",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jan-Robin Aumann/IBM, Dorian Czichotzki/IBM",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^8.0.4",
+    "express": "^4.16.3"
+  }
+}
