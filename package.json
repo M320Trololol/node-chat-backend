@@ -5,10 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "nps",
-    "test": "npm start test",
-    "build": "npm start build",
-    "presetup": "yarn install",
-    "setup": "npm start config && npm start setup.script"
+    "build": "npm start build"
   },
   "author": "Jan-Robin Aumann/IBM, Dorian Czichotzki/IBM",
   "license": "MIT",
