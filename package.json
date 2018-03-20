@@ -4,7 +4,11 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nps",
+    "test": "npm start test",
+    "build": "npm start build",
+    "presetup": "yarn install",
+    "setup": "npm start config && npm start setup.script"
   },
   "author": "Jan-Robin Aumann/IBM, Dorian Czichotzki/IBM",
   "license": "MIT",
