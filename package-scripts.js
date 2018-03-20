@@ -11,7 +11,7 @@ module.exports = {
          * Starts the builded app from the dist directory
          */
         start: {
-            script: 'node dist/app.js',
+            script: 'node dist/App.js',
             description: 'Starts the builded app from the dist directory'
         },
         /**
