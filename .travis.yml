@@ -6,9 +6,6 @@ install:
 env:
   - PORT=3000
 script:
-  - npm start test
-  - npm start test.integration
-  - npm start test.e2e
-  - npm start build
+  - npm test
 notifications:
   email: false
