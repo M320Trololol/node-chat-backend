@@ -4,4 +4,7 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./welcome.controller"));
+__export(require("./websocket.controller"));
+__export(require("./chatrest.controller"));
+__export(require("./root.controller"));
 //# sourceMappingURL=index.js.map
