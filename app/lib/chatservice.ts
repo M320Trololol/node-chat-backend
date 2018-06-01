@@ -4,45 +4,69 @@ import { message } from '../interfaces/message.interface';
 
 // Instatiate new CouchDB request class
 const db = new CouchDb({
-    host: 'http://m320trololol.com',
-    port: 5984,
-    auth: {
-        username: 'admin',
-        password: 'node-chat-backend'
-    }
+  host: "http://m320trololol.com",
+  port: 5984,
+  auth: {
+    username: "admin",
+    password: "node-chat-backend"
+  }
 });
 
 export function getChatRooms() {
-  let rooms = db.getDocuments({dbName: 'rooms', options: {include_docs: true}});
+  let rooms = db.getDocuments({
+    dbName: "rooms",
+    options: { include_docs: true }
+  });
   rooms.then(
-    (value) => {
+    value => {
       let result: string[] = [];
       value.rows.forEach(element => {
         if (element.doc) {
           result.push(element.doc.name);
         }
       });
-      console.log(result);
       return result;
     },
-    (reason) => {
-      console.error("Rooms could not be retrieved, reason: " + reason)
+    reason => {
+      console.error("Rooms could not be retrieved, reason: " + reason);
       return reason;
-    })
-};
+    }
+  );
+}
 
 export function getMessagesInRoom(roomId: string) {
-  if(!roomId) {
-    return Promise.reject(new Error('Room must be defined'));
+  if (!roomId) {
+    return new Error("Room must be defined");
   }
-  return db.findDocuments({
-    dbName: 'messages',
-    findOptions: {
-      selector: {
-        "room": roomId
+  let messages = db
+    .findDocuments({
+      dbName: "messages",
+      findOptions: {
+        selector: {
+          room: roomId
+        }
       }
-    }
-  });
+    })
+    .then(
+      value => {
+        let result: message[] = [];
+        value.docs.forEach(element => {
+          if (element) {
+            result.push(element.message);
+          }
+        });
+        return result;
+      },
+      reason => {
+        console.error(
+          "Messages from " +
+            roomId +
+            "  could not be retrieved, reason: " +
+            reason
+        );
+        return reason;
+      }
+    );
 }
 
 // export function postMessage(roomId: string, {user, message, meta}) {
@@ -77,9 +101,9 @@ export function getMessagesInRoom(roomId: string) {
 
 module.exports = {
   getChatRooms,
-  getMessagesInRoom,
+  getMessagesInRoom
   // postMessage,
   // getUsersInRoom,
   // postPrivateMessage,
   // getPrivateChatRoomName
-}
+};
