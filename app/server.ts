@@ -13,8 +13,9 @@ const server = http.createServer(expressApp);
 const webSocketServer = new WebSocket.Server({ server });
 
 webSocketServer.on("connection", (webSocket, httpRequest) =>
-  webSocketController.manageConnection(expressApp, webSocket, httpRequest)
+  webSocketController.manageConnection(expressApp, webSocket, httpRequest, webSocketServer)
 );
+
 
 //websocket error handling
 webSocketServer.on("error", () => {})

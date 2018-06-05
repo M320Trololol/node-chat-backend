@@ -1,18 +1,14 @@
+import WebSocket from 'ws';
+
 import { CouchDb } from '@teammaestro/node-couchdb-client';
 
 import { message } from '../interfaces/message.interface';
 import { room } from '../interfaces/room.interface';
 import { user } from '../interfaces/user.interface';
+import { environment } from './environment';
 
 // Instatiate new CouchDB request class
-const db = new CouchDb({
-  host: "http://m320trololol.com",
-  port: 5984,
-  auth: {
-    username: "admin",
-    password: "node-chat-backend"
-  }
-});
+const db = new CouchDb(environment.CouchCredentials);
 
 export async function getChatRooms() {
   var rooms = await db.getDocuments({
@@ -147,11 +143,28 @@ export async function postMessage(message: message) {
   });
 
   let rooms: string[] = [];
-  existingRooms.docs.forEach(document => rooms.push(document.roomName));
+  let users: string[] = [];
+
+  existingRooms.docs.forEach(document => {
+    rooms.push(document.roomName);
+    document.users.forEach((user: user) => users.push(user.userName));
+  });
 
   if (rooms.indexOf(message.roomName) > -1) {
-    if (rooms[rooms.indexOf(message.roomName)]) {
-      return db.createDocument({ doc: message, dbName: "messages" });
+    if (users.indexOf(message.user.userName) > -1) {
+      const sent = await db.createDocument({
+        doc: message,
+        dbName: "messages"
+      });
+      if (sent.hasOwnProperty("ok")) {
+        return { action: "postMessage", message: message };
+      } else {
+        return Promise.reject(
+          new Error(
+            `Message could not be sent to Server, Database Error: ${sent}`
+          )
+        );
+      }
     } else {
       return Promise.reject(
         new Error(
@@ -189,19 +202,27 @@ export async function getUsersInRoom(roomName: string) {
   }
 }
 
-// export function postPrivateMessage(userId, {user, message, meta}) {
-//   if(!userId || !user || !message) {
-//     return Promise.reject(new Error('Recipient, User, Message must be defined'));
-//   }
+export async function broadcastPostedMessage(
+  message: message,
+  webSocketServer: WebSocket.Server
+) {
+  const existingRooms = await db.findDocuments({
+    dbName: "rooms",
+    findOptions: { selector: { roomName: message.roomName } }
+  });
 
-//   // create private conversation as new chat-room
-//   const roomId = getPrivateChatRoomName(userId, user);
-//   return db.storeMessage(roomId, true, {user, message, meta, timestamp: Date.now()});
-// }
+  let rooms: string[] = [];
+  let users: string[] = [];
 
-// export function getPrivateChatRoomName(userA, userB) {
-//   return userA < userB ? `${userA}_x_${userB}`: `${userB}_x_${userA}`;
-// }
+  existingRooms.docs.forEach(document => {
+    rooms.push(document.roomName);
+    document.users.forEach((user: user) => users.push(user.userName));
+  });
+  webSocketServer.clients.forEach(client => {
+    //somehow check, if client has joined channel
+    client.send({ action: "postMessage", message: message });
+  });
+}
 
 module.exports = {
   getChatRooms,
@@ -209,7 +230,6 @@ module.exports = {
   joinChatRoom,
   getMessagesInRoom,
   postMessage,
-  getUsersInRoom
-  // postPrivateMessage,
-  // getPrivateChatRoomName
+  getUsersInRoom,
+  broadcastPostedMessage
 };

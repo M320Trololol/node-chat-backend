@@ -26,11 +26,4 @@ router.get("/chats/:room/users", async (request: Request, response: Response) =>
 //   chatService.postPrivateMessage();
 // });
 
-// getChatRooms
-// getMessagesInRoom
-// postMessage
-// getUsersInRoom
-// postPrivateMessage
-// getPrivateChatRoomName
-
 export const ChatRestController: Router = router;

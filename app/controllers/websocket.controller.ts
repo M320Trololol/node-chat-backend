@@ -2,15 +2,15 @@ import express from 'express';
 import http from 'http';
 import WebSocket from 'ws';
 
-import * as command from '../interfaces/command.interface';
-import * as message from '../interfaces/message.interface';
-import { sessionInfo } from '../interfaces/sessionInfo.interface';
+import { command } from '../interfaces/command.interface';
+import { message } from '../interfaces/message.interface';
 import * as chatService from '../lib/chatservice';
 
 export function manageConnection(
   expressApp: express.Application,
   webSocket: WebSocket,
-  httpRequest: http.IncomingMessage
+  httpRequest: http.IncomingMessage,
+  webSocketServer: WebSocket.Server
 ) {
   webSocket.on("connection", message => {
     //send immediately a feedback to the incoming connection
@@ -44,7 +44,7 @@ export function manageConnection(
       console.log("received: %s", message);
 
       //parse message into JSON object
-      var command: command.command = JSON.parse(message);
+      var command: command = JSON.parse(message);
 
       //if the message didn't contain an action, send response
       if (!command.action) {
@@ -56,7 +56,8 @@ export function manageConnection(
         expressApp,
         webSocket,
         httpRequest,
-        command
+        command,
+        webSocketServer
       );
       webSocket.send(JSON.stringify(handled));
     } catch (error) {
@@ -69,15 +70,19 @@ function handleSocketAction(
   expressApp: express.Application,
   webSocket: WebSocket,
   httpRequest: http.IncomingMessage,
-  command: command.command
+  command: command,
+  webSocketServer: WebSocket.Server
 ) {
   console.log(`Websocket Action received: ${command.action}`);
   switch (command.action) {
-    case "postPrivateMessage":
-    // return chatService.postPrivateMessage(command.user, { command.user, command.message, command.meta });
     case "postMessage":
       if (command.message) {
-        return chatService.postMessage(command.message);
+        let posted = chatService.postMessage(command.message);
+        //if message has been successfully send, broadcast it to all users
+        if (!posted.hasOwnProperty("error")) {
+          chatService.broadcastPostedMessage(command.message, webSocketServer);
+        }
+        return posted;
       } else {
         return Promise.reject(new Error("message must be defined"));
       }
