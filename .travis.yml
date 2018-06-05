@@ -6,6 +6,6 @@ install:
 env:
   - PORT=3000
 script:
-  - npm test
+  - tsc
 notifications:
   email: false
