@@ -2,7 +2,7 @@ import * as os from 'os';
 
 export const environment = {
   CouchCredentials: {
-    host: "http://bigbluewhale",
+    host: "http://m320trololol.com",
     port: 5984,
     auth: {
       username: "admin",
