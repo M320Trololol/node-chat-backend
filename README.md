@@ -66,7 +66,6 @@ Websocket are in JSON format. Declare a property named 'action' to invoke functi
 ```TypeScript
 {
   action: "postMessage",
-  user: user,
   message: {
     user: user,
     roomName: "Lobby",
@@ -105,7 +104,6 @@ or an error of the format
 ```TypeScript
 {
   action: "getChatRooms",
-  user: user
 }
 ```
 
@@ -123,7 +121,6 @@ or an error of the format
 ```TypeScript
 {
   action: "getUsersInRoom",
-  user: user,
   roomName: "roomName"
 }
 ```
@@ -143,7 +140,6 @@ or an error of the format
 ```TypeScript
 {
   action: "getMessagesInRoom",
-  user: user,
   roomName: "roomName"
 }
 ```
