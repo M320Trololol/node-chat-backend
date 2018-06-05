@@ -27,28 +27,63 @@ function getChatRooms() {
         let result = [];
         rooms.rows.forEach(element => {
             if (element.doc) {
-                result.push(element.doc.room);
+                var room = {};
+                room.roomName = element.doc.roomName;
+                room.created = element.doc.created;
+                room.users = element.doc.users;
+                room.owners = element.doc.owners;
+                if (element.doc.messages) {
+                    room.messages = element.doc.messages;
+                }
+                if (element.doc.password) {
+                    room.password = element.doc.password;
+                }
+                result.push(room);
             }
         });
         return { action: "getChatRooms", rooms: result };
     });
 }
 exports.getChatRooms = getChatRooms;
-// export async function getMessagesInRoom(room: room) {
-//   if (!room) {
-//     return new Error("Room must be defined");
-//   }
-//   var messages = await db.findDocuments({
-//     dbName: "messages",
-//     findOptions: { selector: { room: room } }
-//   });
-//   let result: message[] = [];
-//   messages.docs.forEach(element => {
-//     if (element) {
-//       result.push(element.message);
-//     }
-//   });
-// }
+function getMessagesInRoom(roomName) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const existingRooms = yield db.findDocuments({
+            dbName: "rooms",
+            findOptions: { selector: { roomName: roomName } }
+        });
+        let rooms = [];
+        existingRooms.docs.forEach(document => rooms.push(document.roomName));
+        if (rooms.indexOf(roomName) > -1) {
+            var messages = yield db.findDocuments({
+                dbName: "messages",
+                findOptions: { selector: { roomName: roomName } }
+            });
+            let result = [];
+            messages.docs.forEach(document => {
+                if (document) {
+                    var message = {};
+                    message.user = document.user;
+                    message.roomName = document.roomName;
+                    message.text = document.text;
+                    message.timestamp = document.timestamp;
+                    if (document.meta) {
+                        message.meta = document.meta;
+                    }
+                    result.push(message);
+                }
+            });
+            return {
+                action: "getMessagesInRoom",
+                roomName: roomName,
+                messages: result
+            };
+        }
+        else {
+            return { error: `There is no Room ${roomName}. Create it first!` };
+        }
+    });
+}
+exports.getMessagesInRoom = getMessagesInRoom;
 function createChatRoom(roomName, creator) {
     return __awaiter(this, void 0, void 0, function* () {
         const room = {
@@ -121,7 +156,12 @@ function postMessage(message) {
         let rooms = [];
         existingRooms.docs.forEach(document => rooms.push(document.roomName));
         if (rooms.indexOf(message.roomName) > -1) {
-            return db.createDocument({ doc: message, dbName: "messages" });
+            if (rooms[rooms.indexOf(message.roomName)]) {
+                return db.createDocument({ doc: message, dbName: "messages" });
+            }
+            else {
+                return Promise.reject(new Error(`User ${message.user.userName} hasn't joined the room, join it first!`));
+            }
         }
         else {
             return Promise.reject(new Error(`Room ${message.roomName} doesn't exist, create and join it first`));
@@ -129,12 +169,28 @@ function postMessage(message) {
     });
 }
 exports.postMessage = postMessage;
-// export function getUsersInRoom(roomId) {
-//   if(!roomId) {
-//     return Promise.reject(new Error('Room must be defined'));
-//   }
-//   return db.loadUsers(roomId);
-// }
+function getUsersInRoom(roomName) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const existingRooms = yield db.findDocuments({
+            dbName: "rooms",
+            findOptions: { selector: { roomName: roomName } }
+        });
+        let rooms = [];
+        existingRooms.docs.forEach(document => rooms.push(document.roomName));
+        if (rooms.indexOf(roomName) > -1) {
+            let result = existingRooms.docs[0].users;
+            return {
+                action: "getUsersInRoom",
+                roomName: roomName,
+                users: result
+            };
+        }
+        else {
+            return { error: `There is no Room ${roomName}. Create it first!` };
+        }
+    });
+}
+exports.getUsersInRoom = getUsersInRoom;
 // export function postPrivateMessage(userId, {user, message, meta}) {
 //   if(!userId || !user || !message) {
 //     return Promise.reject(new Error('Recipient, User, Message must be defined'));
@@ -150,7 +206,10 @@ module.exports = {
     getChatRooms,
     createChatRoom,
     joinChatRoom,
-    // getMessagesInRoom,
+    getMessagesInRoom,
     postMessage,
+    getUsersInRoom
+    // postPrivateMessage,
+    // getPrivateChatRoomName
 };
 //# sourceMappingURL=chatservice.js.map

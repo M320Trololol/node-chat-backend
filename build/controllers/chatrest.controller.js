@@ -18,16 +18,24 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const chatService = __importStar(require("../lib/chatservice"));
 const router = express_1.Router();
-router.get('/', (request, response) => {
-    response.send('Hello, this is the node-chat-backend RESTFUL-API!');
+router.get("/", (request, response) => {
+    response.send("Hello, this is the node-chat-backend RESTFUL-API!");
 });
-router.get('/chats', (request, response) => __awaiter(this, void 0, void 0, function* () {
+router.get("/chats", (request, response) => __awaiter(this, void 0, void 0, function* () {
     response.send(yield chatService.getChatRooms());
 }));
-// router.get('/chats/:room', (request: Request, response: Response) => chatService.getMessagesInRoom());
-// router.post('/chats/:room', (request: Request, response: Response) => chatService.postMessage());
-// router.get('/chats/:room/users', (request: Request, response: Response) => chatService.getUsersInRoom());
-// router.post('/chats/users/:user', (request: Request, response: Response) => chatService.postPrivateMessage());
+router.get("/chats/:room/messages", (request, response) => __awaiter(this, void 0, void 0, function* () {
+    response.send(yield chatService.getMessagesInRoom(request.params.room));
+}));
+router.post("/chats/:room", (request, response) => {
+    //chatService.postMessage();
+});
+router.get("/chats/:room/users", (request, response) => __awaiter(this, void 0, void 0, function* () {
+    response.send(yield chatService.getUsersInRoom(request.params.room));
+}));
+// router.post("/chats/users/:user", (request: Request, response: Response) => {
+//   chatService.postPrivateMessage();
+// });
 // getChatRooms
 // getMessagesInRoom
 // postMessage

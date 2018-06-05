@@ -40,29 +40,11 @@ export function manageConnection(
 
   webSocket.on("message", async (message: string) => {
     try {
-      var websocketSession: sessionInfo = {};
-
       //log the received message
       console.log("received: %s", message);
 
       //parse message into JSON object
       var command: command.command = JSON.parse(message);
-      command.timestamp = new Date(Date.now());
-
-      //set user
-      websocketSession.chatUser = command.user.userName;
-
-      //check if incoming message contains a roomId
-      if (command.roomName) {
-        //if there aren't any chat rooms for the current session, initialize the array with an empty array
-        if (!websocketSession.chatRooms) {
-          websocketSession.chatRooms = [""];
-        }
-        //if there are chat rooms, check if the roomId from the message is one of them and if not, create that room
-        if (websocketSession.chatRooms.indexOf(command.roomName) > -1) {
-          websocketSession.chatRooms.push(command.roomName);
-        }
-      }
 
       //if the message didn't contain an action, send response
       if (!command.action) {
@@ -97,18 +79,34 @@ function handleSocketAction(
       if (command.message) {
         return chatService.postMessage(command.message);
       } else {
-        return Promise.reject(new Error("Message must be defined"));
+        return Promise.reject(new Error("message must be defined"));
       }
     case "getMessagesInRoom":
-     return chatService.getMessagesInRoom(command.roomName);
+      if (command.roomName) {
+        return chatService.getMessagesInRoom(command.roomName);
+      } else {
+        return Promise.reject(new Error("roomName must be defined"));
+      }
     case "getUsersInRoom":
-    // return chatService.getUsersInRoom(command.roomId);
+      if (command.roomName) {
+        return chatService.getUsersInRoom(command.roomName);
+      } else {
+        return Promise.reject(new Error("roomName must be defined"));
+      }
     case "getChatRooms":
       return chatService.getChatRooms();
     case "createChatRoom":
-      return chatService.createChatRoom(command.roomName, command.user);
+      if (command.roomName && command.user) {
+        return chatService.createChatRoom(command.roomName, command.user);
+      } else {
+        return Promise.reject(new Error("roomName and user must be defined"));
+      }
     case "joinChatRoom":
-      return chatService.joinChatRoom(command.roomName, command.user);
+      if (command.roomName && command.user) {
+        return chatService.joinChatRoom(command.roomName, command.user);
+      } else {
+        return Promise.reject(new Error("roomName and users must be defined"));
+      }
     default:
       webSocket.send(JSON.stringify({ error: "unspecified action" }));
   }
