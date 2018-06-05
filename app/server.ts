@@ -2,7 +2,7 @@ import express from 'express';
 import http from 'http';
 import WebSocket from 'ws';
 
-import { rootController, WelcomeController } from './controllers';
+import { ChatRestController, rootController, WelcomeController } from './controllers';
 import * as webSocketController from './controllers/websocket.controller';
 
 const expressApp: express.Application = express();
@@ -20,7 +20,7 @@ webSocketServer.on("connection", (webSocket, httpRequest) =>
 webSocketServer.on("error", () => {})
 
 expressApp.use("/welcome", WelcomeController);
-//expressApp.use("/api", ChatRestController);
+expressApp.use("/api", ChatRestController);
 expressApp.use("/", rootController);
 
 server.listen(port, () => {

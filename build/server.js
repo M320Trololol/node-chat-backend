@@ -23,7 +23,7 @@ webSocketServer.on("connection", (webSocket, httpRequest) => webSocketController
 //websocket error handling
 webSocketServer.on("error", () => { });
 expressApp.use("/welcome", controllers_1.WelcomeController);
-//expressApp.use("/api", ChatRestController);
+expressApp.use("/api", controllers_1.ChatRestController);
 expressApp.use("/", controllers_1.rootController);
 server.listen(port, () => {
     // Success callback

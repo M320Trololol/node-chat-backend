@@ -7,7 +7,9 @@ const router: Router = Router();
 router.get('/', (request: Request, response: Response) => {
     response.send('Hello, this is the node-chat-backend RESTFUL-API!');
 });
-router.get('/chats', (request: Request, response: Response) => chatService.getChatRooms());
+router.get('/chats', async (request: Request, response: Response) => {
+    response.send(await chatService.getChatRooms());
+});
 // router.get('/chats/:room', (request: Request, response: Response) => chatService.getMessagesInRoom());
 // router.post('/chats/:room', (request: Request, response: Response) => chatService.postMessage());
 // router.get('/chats/:room/users', (request: Request, response: Response) => chatService.getUsersInRoom());
