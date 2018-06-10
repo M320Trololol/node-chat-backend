@@ -26,5 +26,5 @@ expressApp.use("/", rootController);
 
 server.listen(port, () => {
   // Success callback
-  console.log(`Listening at http://localhost:${port}/`);
+  console.info(`Listening at http://localhost:${port}/`);
 });

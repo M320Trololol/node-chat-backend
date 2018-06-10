@@ -11,6 +11,7 @@ import { environment } from './environment';
 const db = new CouchDb(environment.CouchCredentials);
 
 export async function getChatRooms() {
+  console.info(`[CHATSERVICE]: executing getChatRooms`);
   var rooms = await db.getDocuments({
     dbName: "rooms",
     options: { include_docs: true }
@@ -36,6 +37,7 @@ export async function getChatRooms() {
 }
 
 export async function getMessagesInRoom(roomName: string) {
+  console.info(`[CHATSERVICE]: executing getMessagesInRoom for: ${roomName}`);
   const existingRooms = await db.findDocuments({
     dbName: "rooms",
     findOptions: { selector: { roomName: roomName } }
@@ -75,6 +77,7 @@ export async function getMessagesInRoom(roomName: string) {
 }
 
 export async function createChatRoom(roomName: string, creator: user) {
+  console.info(`[CHATSERVICE]: executing createChatRoom ${roomName} for user ${creator}`);
   const room: room = {
     roomName: roomName,
     created: new Date(Date.now()),
@@ -93,6 +96,7 @@ export async function createChatRoom(roomName: string, creator: user) {
 }
 
 export async function joinChatRoom(roomName: string, joining: user) {
+  console.info(`[CHATSERVICE]: executing joinChatRoom ${roomName} for user ${joining}`);
   const existingRooms = await db.findDocuments({
     dbName: "rooms",
     findOptions: { selector: { roomName: roomName } }
@@ -137,6 +141,7 @@ export async function joinChatRoom(roomName: string, joining: user) {
 }
 
 export async function postMessage(message: message) {
+  console.info(`[CHATSERVICE]: executing postMessage`);
   const existingRooms = await db.findDocuments({
     dbName: "rooms",
     findOptions: { selector: { roomName: message.roomName } }
@@ -182,6 +187,7 @@ export async function postMessage(message: message) {
 }
 
 export async function getUsersInRoom(roomName: string) {
+  console.info(`[CHATSERVICE]: executing getUsersInRoom for ${roomName}`);
   const existingRooms = await db.findDocuments({
     dbName: "rooms",
     findOptions: { selector: { roomName: roomName } }
@@ -206,6 +212,7 @@ export async function broadcastPostedMessage(
   message: message,
   webSocketServer: WebSocket.Server
 ) {
+  console.info(`[CHATSERVICE]: executing broadcastPostedMessage`);
   const existingRooms = await db.findDocuments({
     dbName: "rooms",
     findOptions: { selector: { roomName: message.roomName } }
@@ -220,7 +227,9 @@ export async function broadcastPostedMessage(
   });
   webSocketServer.clients.forEach(client => {
     //somehow check, if client has joined channel
-    client.send({ action: "postMessage", message: message });
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ action: "postMessage", message: message }));
+    }
   });
 }
 

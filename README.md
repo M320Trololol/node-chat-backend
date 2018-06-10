@@ -28,7 +28,7 @@ export interface room {
     roomName: string,
     created: Date,
     owners: user[], //creator and admins of room
-    users: user[], //
+    users: user[], //useres subscribed to the room
     messages?: message[],
     password?: string
 }

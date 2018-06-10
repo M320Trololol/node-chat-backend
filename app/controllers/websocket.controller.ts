@@ -12,37 +12,21 @@ export function manageConnection(
   httpRequest: http.IncomingMessage,
   webSocketServer: WebSocket.Server
 ) {
-  webSocket.on("connection", message => {
-    //send immediately a feedback to the incoming connection
-    console.warn(`[WEBSOCKET]: connection opened: ${message}`);
-    webSocket.send(
-      JSON.stringify({
-        opened:
-          "Hi there, you connected to the node-chat-backend WebSocket Server"
-      })
-    );
+  webSocket.on("open", () => {
+    console.warn(`[WEBSOCKET]: connection opened`);
   });
 
   webSocket.on("close", message => {
     console.warn(`[WEBSOCKET]: connection closed: ${message}`);
-    webSocket.send(
-      JSON.stringify({ closed: "node-chat-backend WebSocket closed. Bye!" })
-    );
   });
 
   webSocket.on("error", error => {
+    console.warn(`[WEBSOCKET]: error encountered: ${error}`);
     webSocket.send(JSON.stringify({ error: error.message }));
-  });
-
-  webSocket.on("ping", data => {
-    webSocket.send(`pong: ${data}`);
   });
 
   webSocket.on("message", async (message: string) => {
     try {
-      //log the received message
-      console.log("received: %s", message);
-
       //parse message into JSON object
       var command: command = JSON.parse(message);
 
@@ -52,15 +36,22 @@ export function manageConnection(
           JSON.stringify({ error: "Socket Action must be specified" })
         );
       }
+
+      //otherwise handle it
       let handled = await handleSocketAction(
         expressApp,
         webSocket,
         httpRequest,
         command,
         webSocketServer
-      );
+      ).catch(error => {
+        console.warn(`Socket Action could not be handles ${error}`);
+      });
+
+      //send result to the client
       webSocket.send(JSON.stringify(handled));
     } catch (error) {
+      //catching JSON parse errors
       webSocket.send(JSON.stringify({ error: error.message }));
     }
   });
@@ -73,7 +64,6 @@ function handleSocketAction(
   command: command,
   webSocketServer: WebSocket.Server
 ) {
-  console.log(`Websocket Action received: ${command.action}`);
   switch (command.action) {
     case "postMessage":
       if (command.message) {
